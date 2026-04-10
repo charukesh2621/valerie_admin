@@ -15,6 +15,7 @@ import DoctorManagement from "./DoctorManagement";
 import AppointmentManagement from "./AppointmentManagement";
 import DoctorAppointments from "./DoctorAppointments";
 import DoctorFollowUps from "./DoctorFollowUps";
+import DoctorRagPage from "./DoctorRagPage";
 
 function App() {
   const [activePage, setActivePage] = useState("dashboard");
@@ -204,6 +205,9 @@ function App() {
         case "doctorFollowUps":
           return <DoctorFollowUps />;
 
+        case "doctorRagPage":
+          return <DoctorRagPage />;
+
         default:
           return (
             <DoctorDashboard
@@ -309,6 +313,7 @@ function App() {
     { text: "Patient Details", page: "doctorPatientDetail" },
     { text: "My Appointments", page: "doctorAppointments" },
     { text: "Patient Follow-Ups", page: "doctorFollowUps" },
+    { text: "AI Patient Summary", page: "doctorRagPage" },
   ];
 
   const navItems = userRole === "doctor" ? doctorLinks : adminLinks;

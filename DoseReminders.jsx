@@ -2,8 +2,9 @@ import { useState } from "react";
 
 function DoseReminders() {
   const [selectedReminder, setSelectedReminder] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
-  const reminders = [
+  const [reminders, setReminders] = useState([
     {
       id: "R001",
       patientName: "Rahul Sharma",
@@ -11,6 +12,8 @@ function DoseReminders() {
       dosage: "500mg",
       time: "08:00 AM",
       frequency: "2 times/day",
+      mealInstruction: "After breakfast",
+      instructionNote: "Drink plenty of water after taking this medicine.",
       status: "Active",
     },
     {
@@ -20,6 +23,8 @@ function DoseReminders() {
       dosage: "10ml",
       time: "09:30 PM",
       frequency: "1 time/day",
+      mealInstruction: "After dinner",
+      instructionNote: "Do not drink cold water immediately after dose.",
       status: "Active",
     },
     {
@@ -29,6 +34,8 @@ function DoseReminders() {
       dosage: "1 tablet",
       time: "07:00 AM",
       frequency: "1 time/day",
+      mealInstruction: "After breakfast",
+      instructionNote: "",
       status: "Missed",
     },
     {
@@ -38,9 +45,49 @@ function DoseReminders() {
       dosage: "1 capsule",
       time: "01:00 PM",
       frequency: "1 time/day",
+      mealInstruction: "Before lunch",
+      instructionNote: "Avoid tea or coffee for 1 hour after taking it.",
       status: "Completed",
     },
-  ];
+  ]);
+
+  const handleManage = (reminder) => {
+    setSelectedReminder({ ...reminder });
+    setIsEditing(false);
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleClose = () => {
+    setSelectedReminder(null);
+    setIsEditing(false);
+  };
+
+  const handleChange = (field, value) => {
+    setSelectedReminder((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSave = () => {
+    setReminders((prev) =>
+      prev.map((item) =>
+        item.id === selectedReminder.id ? selectedReminder : item
+      )
+    );
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    const originalReminder = reminders.find(
+      (item) => item.id === selectedReminder.id
+    );
+    setSelectedReminder({ ...originalReminder });
+    setIsEditing(false);
+  };
 
   return (
     <div
@@ -213,7 +260,7 @@ function DoseReminders() {
                 <td style={tableCellStyle}>
                   <button
                     style={buttonStyle}
-                    onClick={() => setSelectedReminder(reminder)}
+                    onClick={() => handleManage(reminder)}
                   >
                     Manage
                   </button>
@@ -263,26 +310,36 @@ function DoseReminders() {
                   fontSize: "14px",
                 }}
               >
-                Review the selected patient reminder information.
+                {isEditing
+                  ? "Edit the selected patient reminder information."
+                  : "Review the selected patient reminder information."}
               </p>
             </div>
 
-            <button
-              onClick={() => setSelectedReminder(null)}
-              style={{
-                background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-                color: "white",
-                border: "none",
-                padding: "10px 16px",
-                borderRadius: "10px",
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight: "600",
-                boxShadow: "0 8px 18px rgba(239, 68, 68, 0.18)",
-              }}
-            >
-              Close
-            </button>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              {!isEditing && (
+                <button onClick={handleEdit} style={editButtonStyle}>
+                  Edit
+                </button>
+              )}
+
+              <button
+                onClick={handleClose}
+                style={{
+                  background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                  color: "white",
+                  border: "none",
+                  padding: "10px 16px",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  boxShadow: "0 8px 18px rgba(239, 68, 68, 0.18)",
+                }}
+              >
+                Close
+              </button>
+            </div>
           </div>
 
           <div
@@ -304,29 +361,157 @@ function DoseReminders() {
 
             <div style={detailBoxStyle}>
               <span style={detailLabelStyle}>Medicine</span>
-              <span style={detailValueStyle}>{selectedReminder.medicine}</span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={selectedReminder.medicine}
+                  onChange={(e) => handleChange("medicine", e.target.value)}
+                  style={inputStyle}
+                />
+              ) : (
+                <span style={detailValueStyle}>{selectedReminder.medicine}</span>
+              )}
             </div>
 
             <div style={detailBoxStyle}>
               <span style={detailLabelStyle}>Dosage</span>
-              <span style={detailValueStyle}>{selectedReminder.dosage}</span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={selectedReminder.dosage}
+                  onChange={(e) => handleChange("dosage", e.target.value)}
+                  style={inputStyle}
+                />
+              ) : (
+                <span style={detailValueStyle}>{selectedReminder.dosage}</span>
+              )}
             </div>
 
             <div style={detailBoxStyle}>
               <span style={detailLabelStyle}>Time</span>
-              <span style={detailValueStyle}>{selectedReminder.time}</span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={selectedReminder.time}
+                  onChange={(e) => handleChange("time", e.target.value)}
+                  placeholder="Example: 08:00 AM"
+                  style={inputStyle}
+                />
+              ) : (
+                <span style={detailValueStyle}>{selectedReminder.time}</span>
+              )}
             </div>
 
             <div style={detailBoxStyle}>
               <span style={detailLabelStyle}>Frequency</span>
-              <span style={detailValueStyle}>{selectedReminder.frequency}</span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={selectedReminder.frequency}
+                  onChange={(e) => handleChange("frequency", e.target.value)}
+                  placeholder="Example: 2 times/day"
+                  style={inputStyle}
+                />
+              ) : (
+                <span style={detailValueStyle}>{selectedReminder.frequency}</span>
+              )}
+            </div>
+
+            <div style={detailBoxStyle}>
+              <span style={detailLabelStyle}>Meal Instruction</span>
+              {isEditing ? (
+                <select
+                  value={selectedReminder.mealInstruction || ""}
+                  onChange={(e) => handleChange("mealInstruction", e.target.value)}
+                  style={inputStyle}
+                >
+                  <option value="">Select</option>
+                  <option value="Before breakfast">Before breakfast</option>
+                  <option value="After breakfast">After breakfast</option>
+                  <option value="Before lunch">Before lunch</option>
+                  <option value="After lunch">After lunch</option>
+                  <option value="Before dinner">Before dinner</option>
+                  <option value="After dinner">After dinner</option>
+                </select>
+              ) : (
+                <span style={detailValueStyle}>
+                  {selectedReminder.mealInstruction || "Not specified"}
+                </span>
+              )}
             </div>
 
             <div style={detailBoxStyle}>
               <span style={detailLabelStyle}>Status</span>
-              <span style={detailValueStyle}>{selectedReminder.status}</span>
+              {isEditing ? (
+                <select
+                  value={selectedReminder.status}
+                  onChange={(e) => handleChange("status", e.target.value)}
+                  style={inputStyle}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Missed">Missed</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              ) : (
+                <span style={detailValueStyle}>{selectedReminder.status}</span>
+              )}
             </div>
           </div>
+
+          <div
+            style={{
+              marginTop: "14px",
+              backgroundColor: "#f8fafc",
+              border: "1px solid #e5e7eb",
+              borderRadius: "14px",
+              padding: "14px 16px",
+            }}
+          >
+            <span style={detailLabelStyle}>Additional Instruction</span>
+
+            {isEditing ? (
+              <textarea
+                value={selectedReminder.instructionNote || ""}
+                onChange={(e) => handleChange("instructionNote", e.target.value)}
+                placeholder="Write any optional instruction for the user..."
+                style={textAreaStyle}
+                rows={4}
+              />
+            ) : (
+              <p
+                style={{
+                  margin: "10px 0 0 0",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  color: "#111827",
+                  lineHeight: "1.6",
+                }}
+              >
+                {selectedReminder.instructionNote
+                  ? selectedReminder.instructionNote
+                  : "No additional instruction"}
+              </p>
+            )}
+          </div>
+
+          {isEditing && (
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                marginTop: "20px",
+                flexWrap: "wrap",
+              }}
+            >
+              <button onClick={handleSave} style={buttonStyle}>
+                Save Changes
+              </button>
+
+              <button onClick={handleCancelEdit} style={secondaryButtonStyle}>
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -389,6 +574,29 @@ const buttonStyle = {
   boxShadow: "0 8px 18px rgba(37, 99, 235, 0.18)",
 };
 
+const editButtonStyle = {
+  background: "linear-gradient(135deg, #0f766e 0%, #0d9488 100%)",
+  color: "white",
+  border: "none",
+  padding: "10px 16px",
+  borderRadius: "10px",
+  cursor: "pointer",
+  fontSize: "14px",
+  fontWeight: "600",
+  boxShadow: "0 8px 18px rgba(13, 148, 136, 0.18)",
+};
+
+const secondaryButtonStyle = {
+  backgroundColor: "#e5e7eb",
+  color: "#111827",
+  border: "none",
+  padding: "10px 16px",
+  borderRadius: "10px",
+  cursor: "pointer",
+  fontSize: "14px",
+  fontWeight: "600",
+};
+
 const blueIconStyle = {
   width: "48px",
   height: "48px",
@@ -447,6 +655,33 @@ const detailValueStyle = {
   fontSize: "14px",
   fontWeight: "600",
   color: "#111827",
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "10px 12px",
+  borderRadius: "10px",
+  border: "1px solid #cbd5e1",
+  fontSize: "14px",
+  color: "#111827",
+  outline: "none",
+  boxSizing: "border-box",
+  backgroundColor: "#ffffff",
+};
+
+const textAreaStyle = {
+  width: "100%",
+  marginTop: "10px",
+  padding: "10px 12px",
+  borderRadius: "10px",
+  border: "1px solid #cbd5e1",
+  fontSize: "14px",
+  color: "#111827",
+  outline: "none",
+  boxSizing: "border-box",
+  backgroundColor: "#ffffff",
+  resize: "vertical",
+  fontFamily: "inherit",
 };
 
 export default DoseReminders;

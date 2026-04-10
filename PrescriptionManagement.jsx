@@ -2,8 +2,9 @@ import { useState } from "react";
 
 function PrescriptionManagement() {
   const [selectedPrescription, setSelectedPrescription] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
-  const prescriptions = [
+  const [prescriptions, setPrescriptions] = useState([
     {
       id: "PR001",
       patientName: "Rahul Sharma",
@@ -13,6 +14,7 @@ function PrescriptionManagement() {
       duration: "5 days",
       doctor: "Dr. Mehta",
       status: "Active",
+      photo: "",
     },
     {
       id: "PR002",
@@ -23,6 +25,7 @@ function PrescriptionManagement() {
       duration: "7 days",
       doctor: "Dr. Priya",
       status: "Active",
+      photo: "",
     },
     {
       id: "PR003",
@@ -33,6 +36,7 @@ function PrescriptionManagement() {
       duration: "30 days",
       doctor: "Dr. Mehta",
       status: "Completed",
+      photo: "",
     },
     {
       id: "PR004",
@@ -43,8 +47,59 @@ function PrescriptionManagement() {
       duration: "15 days",
       doctor: "Dr. Rakesh",
       status: "Pending",
+      photo: "",
     },
-  ];
+  ]);
+
+  const handleView = (prescription) => {
+    setSelectedPrescription({ ...prescription });
+    setIsEditing(false);
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleClose = () => {
+    setSelectedPrescription(null);
+    setIsEditing(false);
+  };
+
+  const handleChange = (field, value) => {
+    setSelectedPrescription((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const imageUrl = URL.createObjectURL(file);
+
+    setSelectedPrescription((prev) => ({
+      ...prev,
+      photo: imageUrl,
+    }));
+  };
+
+  const handleSave = () => {
+    setPrescriptions((prev) =>
+      prev.map((item) =>
+        item.id === selectedPrescription.id ? selectedPrescription : item
+      )
+    );
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    const originalPrescription = prescriptions.find(
+      (item) => item.id === selectedPrescription.id
+    );
+    setSelectedPrescription({ ...originalPrescription });
+    setIsEditing(false);
+  };
 
   return (
     <div
@@ -217,12 +272,24 @@ function PrescriptionManagement() {
                   </span>
                 </td>
                 <td style={tableCellStyle}>
-                  <button
-                    style={buttonStyle}
-                    onClick={() => setSelectedPrescription(prescription)}
-                  >
-                    View
-                  </button>
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                    <button
+                      style={buttonStyle}
+                      onClick={() => handleView(prescription)}
+                    >
+                      View
+                    </button>
+
+                    <button
+                      style={editButtonStyle}
+                      onClick={() => {
+                        handleView(prescription);
+                        setIsEditing(true);
+                      }}
+                    >
+                      Edit
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -269,26 +336,36 @@ function PrescriptionManagement() {
                   fontSize: "14px",
                 }}
               >
-                Review the selected prescription information.
+                {isEditing
+                  ? "Edit the selected prescription information."
+                  : "Review the selected prescription information."}
               </p>
             </div>
 
-            <button
-              onClick={() => setSelectedPrescription(null)}
-              style={{
-                background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-                color: "white",
-                border: "none",
-                padding: "10px 16px",
-                borderRadius: "10px",
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight: "600",
-                boxShadow: "0 8px 18px rgba(239, 68, 68, 0.18)",
-              }}
-            >
-              Close
-            </button>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              {!isEditing && (
+                <button onClick={handleEdit} style={editButtonStyle}>
+                  Edit
+                </button>
+              )}
+
+              <button
+                onClick={handleClose}
+                style={{
+                  background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                  color: "white",
+                  border: "none",
+                  padding: "10px 16px",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  boxShadow: "0 8px 18px rgba(239, 68, 68, 0.18)",
+                }}
+              >
+                Close
+              </button>
+            </div>
           </div>
 
           <div
@@ -305,39 +382,173 @@ function PrescriptionManagement() {
 
             <div style={detailBoxStyle}>
               <span style={detailLabelStyle}>Patient Name</span>
-              <span style={detailValueStyle}>{selectedPrescription.patientName}</span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={selectedPrescription.patientName}
+                  onChange={(e) => handleChange("patientName", e.target.value)}
+                  style={inputStyle}
+                />
+              ) : (
+                <span style={detailValueStyle}>{selectedPrescription.patientName}</span>
+              )}
             </div>
 
             <div style={detailBoxStyle}>
               <span style={detailLabelStyle}>Medicine</span>
-              <span style={detailValueStyle}>{selectedPrescription.medicine}</span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={selectedPrescription.medicine}
+                  onChange={(e) => handleChange("medicine", e.target.value)}
+                  style={inputStyle}
+                />
+              ) : (
+                <span style={detailValueStyle}>{selectedPrescription.medicine}</span>
+              )}
             </div>
 
             <div style={detailBoxStyle}>
               <span style={detailLabelStyle}>Dosage</span>
-              <span style={detailValueStyle}>{selectedPrescription.dosage}</span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={selectedPrescription.dosage}
+                  onChange={(e) => handleChange("dosage", e.target.value)}
+                  style={inputStyle}
+                />
+              ) : (
+                <span style={detailValueStyle}>{selectedPrescription.dosage}</span>
+              )}
             </div>
 
             <div style={detailBoxStyle}>
               <span style={detailLabelStyle}>Frequency</span>
-              <span style={detailValueStyle}>{selectedPrescription.frequency}</span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={selectedPrescription.frequency}
+                  onChange={(e) => handleChange("frequency", e.target.value)}
+                  style={inputStyle}
+                />
+              ) : (
+                <span style={detailValueStyle}>{selectedPrescription.frequency}</span>
+              )}
             </div>
 
             <div style={detailBoxStyle}>
               <span style={detailLabelStyle}>Duration</span>
-              <span style={detailValueStyle}>{selectedPrescription.duration}</span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={selectedPrescription.duration}
+                  onChange={(e) => handleChange("duration", e.target.value)}
+                  style={inputStyle}
+                />
+              ) : (
+                <span style={detailValueStyle}>{selectedPrescription.duration}</span>
+              )}
             </div>
 
             <div style={detailBoxStyle}>
               <span style={detailLabelStyle}>Doctor</span>
-              <span style={detailValueStyle}>{selectedPrescription.doctor}</span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={selectedPrescription.doctor}
+                  onChange={(e) => handleChange("doctor", e.target.value)}
+                  style={inputStyle}
+                />
+              ) : (
+                <span style={detailValueStyle}>{selectedPrescription.doctor}</span>
+              )}
             </div>
 
             <div style={detailBoxStyle}>
               <span style={detailLabelStyle}>Status</span>
-              <span style={detailValueStyle}>{selectedPrescription.status}</span>
+              {isEditing ? (
+                <select
+                  value={selectedPrescription.status}
+                  onChange={(e) => handleChange("status", e.target.value)}
+                  style={inputStyle}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              ) : (
+                <span style={detailValueStyle}>{selectedPrescription.status}</span>
+              )}
             </div>
           </div>
+
+          <div
+            style={{
+              marginTop: "20px",
+              backgroundColor: "#f8fafc",
+              border: "1px solid #e5e7eb",
+              borderRadius: "14px",
+              padding: "14px 16px",
+            }}
+          >
+            <span style={detailLabelStyle}>Prescription Photo</span>
+
+            {selectedPrescription.photo ? (
+              <div style={{ marginTop: "12px" }}>
+                <img
+                  src={selectedPrescription.photo}
+                  alt="Prescription"
+                  style={{
+                    width: "220px",
+                    height: "220px",
+                    objectFit: "cover",
+                    borderRadius: "12px",
+                    border: "1px solid #d1d5db",
+                  }}
+                />
+              </div>
+            ) : (
+              <p
+                style={{
+                  margin: "10px 0 0 0",
+                  fontSize: "14px",
+                  color: "#6b7280",
+                }}
+              >
+                No prescription photo uploaded
+              </p>
+            )}
+
+            {isEditing && (
+              <div style={{ marginTop: "14px" }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  style={fileInputStyle}
+                />
+              </div>
+            )}
+          </div>
+
+          {isEditing && (
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                marginTop: "20px",
+                flexWrap: "wrap",
+              }}
+            >
+              <button onClick={handleSave} style={buttonStyle}>
+                Save Changes
+              </button>
+
+              <button onClick={handleCancelEdit} style={secondaryButtonStyle}>
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -400,6 +611,29 @@ const buttonStyle = {
   boxShadow: "0 8px 18px rgba(37, 99, 235, 0.18)",
 };
 
+const editButtonStyle = {
+  background: "linear-gradient(135deg, #0f766e 0%, #0d9488 100%)",
+  color: "white",
+  border: "none",
+  padding: "10px 16px",
+  borderRadius: "10px",
+  cursor: "pointer",
+  fontSize: "14px",
+  fontWeight: "600",
+  boxShadow: "0 8px 18px rgba(13, 148, 136, 0.18)",
+};
+
+const secondaryButtonStyle = {
+  backgroundColor: "#e5e7eb",
+  color: "#111827",
+  border: "none",
+  padding: "10px 16px",
+  borderRadius: "10px",
+  cursor: "pointer",
+  fontSize: "14px",
+  fontWeight: "600",
+};
+
 const blueIconStyle = {
   width: "48px",
   height: "48px",
@@ -458,6 +692,29 @@ const detailValueStyle = {
   fontSize: "14px",
   fontWeight: "600",
   color: "#111827",
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "10px 12px",
+  borderRadius: "10px",
+  border: "1px solid #cbd5e1",
+  fontSize: "14px",
+  color: "#111827",
+  outline: "none",
+  boxSizing: "border-box",
+  backgroundColor: "#ffffff",
+};
+
+const fileInputStyle = {
+  width: "100%",
+  padding: "10px 12px",
+  borderRadius: "10px",
+  border: "1px solid #cbd5e1",
+  fontSize: "14px",
+  color: "#111827",
+  backgroundColor: "#ffffff",
+  boxSizing: "border-box",
 };
 
 export default PrescriptionManagement;
